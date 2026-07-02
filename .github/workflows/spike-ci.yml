@@ -32,8 +32,10 @@ jobs:
     - name: Download Demo App
       run: |
         mkdir -p app
-        curl -L -o app/Android.SauceLabs.Mobile.Sample.app.apk \
-          https://github.com/saucelabs/sample-app-mobile/releases/download/2.7.1/Android.SauceLabs.Mobile.Sample.app.2.7.1.apk
+        # ApiDemos: app oficial de Appium, universal x86_64 - siempre lanza en emuladores Intel
+        curl --fail -L -o app/ApiDemos.apk \
+          https://github.com/appium/appium/raw/master/packages/appium/sample-code/apps/ApiDemos-debug.apk
+        echo "APK size: $(wc -c < app/ApiDemos.apk) bytes"
 
     # KVM DEBE ir ANTES del emulador
     - name: Enable KVM Hardware Acceleration

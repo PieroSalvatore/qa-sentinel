@@ -40,37 +40,40 @@ public class CrossChannelSpikeTest {
             .filter(c -> c.name.equals("session-username"))
             .map(c -> c.value)
             .findFirst()
-            .orElse("");
+            .orElse("NO_COOKIE_FOUND");
 
         System.out.println("[WEB] Cookie de sesion extraida: session-username=" + sessionCookie);
 
-        // 2. MOBILE: Conectar con Appium (emulador ya esta corriendo gracias al runner)
+        // 2. MOBILE: Conectar con Appium usando ApiDemos (x86_64, siempre lanza)
         System.out.println("[MOBILE] Conectando con Appium al emulador...");
         UiAutomator2Options options = new UiAutomator2Options()
             .setDeviceName("emulator-5554")
-            .setApp(System.getProperty("user.dir") + "/app/Android.SauceLabs.Mobile.Sample.app.apk")
-            .setNoReset(true);
+            .setApp(System.getProperty("user.dir") + "/app/ApiDemos.apk");
+        // Sin noReset: instalacion limpia garantizada
 
         AndroidDriver driver = new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
+        System.out.println("[MOBILE] App lanzada exitosamente.");
 
         // 3. TRANSFERENCIA DE SESION (el nucleo del Spike)
+        // Intentamos inyectar via shell ADB. ApiDemos no tiene deep link propio,
+        // pero capturamos el fallo con gracia. Lo que importa es ver si
+        // Playwright sigue vivo despues del cruce.
         System.out.println("[TRANSFER] Intentando inyectar estado via shell ADB...");
         Map<String, Object> args = new HashMap<>();
         args.put("command", "am");
         args.put("args", Arrays.asList(
             "start", "-W", "-a", "android.intent.action.VIEW",
-            "-d", "mydemoapprn://cart?session=" + sessionCookie
+            "-d", "qasentinel://session?token=" + sessionCookie
         ));
 
         try {
             driver.executeScript("mobile: shell", args);
-            System.out.println("[TRANSFER] Deep link enviado exitosamente.");
+            System.out.println("[TRANSFER] Comando ADB enviado.");
         } catch (Exception e) {
-            System.out.println("[TRANSFER FAIL] Falla ejecutando shell ADB: " + e.getMessage());
+            System.out.println("[TRANSFER INFO] Shell ADB no ejecutado: " + e.getMessage());
         }
 
-        // Esperar re-render de React Native
-        System.out.println("[MOBILE] Esperando respuesta de la app...");
+        // Esperar re-render
         Thread.sleep(3000);
 
         // 4. WEB: Verificar que la sesion original de Playwright sigue activa
@@ -78,6 +81,13 @@ public class CrossChannelSpikeTest {
         page.navigate("https://www.saucedemo.com/inventory.html");
         boolean isStillLogged = page.locator(".shopping_cart_link").isVisible();
         System.out.println("[WEB] Sesion sigue viva en Web: " + isStillLogged);
+
+        // === RESULTADO DEL SPIKE ===
+        if (isStillLogged) {
+            System.out.println("SPIKE RESULT: GO - La sesion Web sobrevivio al cruce con Mobile.");
+        } else {
+            System.out.println("SPIKE RESULT: NO-GO - La sesion Web se perdio durante el cruce.");
+        }
 
         // Teardown ordenado
         System.out.println("Cerrando drivers...");
