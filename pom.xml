@@ -32,12 +32,6 @@
             <version>${appium.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>4.21.0</version>
-        </dependency>
-
         <!-- TestNG para ejecución del Spike -->
         <dependency>
             <groupId>org.testng</groupId>
