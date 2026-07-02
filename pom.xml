@@ -13,47 +13,26 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <playwright.version>1.44.0</playwright.version>
-        <appium.version>9.2.2</appium.version>
-        <selenium.version>4.12.0</selenium.version>
+        <!--
+          Appium 8.6.0 (LTS) fue disenado para Selenium 4.8.x.
+          En esa era, ContextAware, html5.LocationContext y ClientConfig
+          existen con las firmas correctas. Evita el callejon sin salida de
+          Appium 9.x que necesita Selenium nuevo para correr pero Selenium
+          nuevo elimino interfaces que Appium 9.x necesita para compilar.
+        -->
+        <appium.version>8.6.0</appium.version>
         <testng.version>7.10.2</testng.version>
     </properties>
 
-    <!--
-      Forzamos Selenium 4.12.0 en todo el classpath.
-      Razon: Appium Java Client 9.2.2 fue compilado contra una version de Selenium
-      que aun contenia ContextAware y html5.LocationContext.
-      Esas interfaces fueron eliminadas en Selenium 4.13.0+.
-      Sin este pin, Maven resuelve a una version mas nueva y el compilador falla.
-    -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-remote-driver</artifactId>
-                <version>${selenium.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-api</artifactId>
-                <version>${selenium.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-support</artifactId>
-                <version>${selenium.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
-        <!-- Playwright para Web Automation -->
+        <!-- Playwright para Web Automation (sin dependencias de Selenium) -->
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
             <version>${playwright.version}</version>
         </dependency>
 
-        <!-- Appium para Mobile Automation -->
+        <!-- Appium LTS 8.6.0: trae su propio Selenium 4.8.x compatible -->
         <dependency>
             <groupId>io.appium</groupId>
             <artifactId>java-client</artifactId>
