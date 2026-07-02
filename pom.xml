@@ -14,8 +14,36 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <playwright.version>1.44.0</playwright.version>
         <appium.version>9.2.2</appium.version>
+        <selenium.version>4.12.0</selenium.version>
         <testng.version>7.10.2</testng.version>
     </properties>
+
+    <!--
+      Forzamos Selenium 4.12.0 en todo el classpath.
+      Razon: Appium Java Client 9.2.2 fue compilado contra una version de Selenium
+      que aun contenia ContextAware y html5.LocationContext.
+      Esas interfaces fueron eliminadas en Selenium 4.13.0+.
+      Sin este pin, Maven resuelve a una version mas nueva y el compilador falla.
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-remote-driver</artifactId>
+                <version>${selenium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-api</artifactId>
+                <version>${selenium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-support</artifactId>
+                <version>${selenium.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Playwright para Web Automation -->
@@ -32,7 +60,7 @@
             <version>${appium.version}</version>
         </dependency>
 
-        <!-- TestNG para ejecución del Spike -->
+        <!-- TestNG para ejecucion del Spike -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
